@@ -1,0 +1,16 @@
+{
+  "category": "情志 / 气郁血瘀类",
+  "description": "测气郁 / 血瘀倾向",
+  "questions": [
+    {"id": "Q01", "text": "您感到闷闷不乐、情绪低沉吗？", "weights": {"qi_stagnation": 1.0}},
+    {"id": "Q02", "text": "您容易精神紧张、焦虑不安吗？", "weights": {"qi_stagnation": 0.8}},
+    {"id": "Q03", "text": "您多愁善感、感情脆弱吗？", "weights": {"qi_stagnation": 0.5}},
+    {"id": "Q04", "text": "您容易感到害怕或受到惊吓吗？", "weights": {"qi_stagnation": 0.5}},
+    {"id": "Q05", "text": "您胁肋部或乳房胀痛吗？", "weights": {"qi_stagnation": 0.8}},
+    {"id": "Q06", "text": "您无缘无故叹气吗？", "weights": {"qi_stagnation": 0.8}},
+    {"id": "Q07", "text": "您面色晦暗或容易出现褐斑吗？", "weights": {"blood_stasis": 1.0}},
+    {"id": "Q08", "text": "您会出现黑眼圈吗？", "weights": {"blood_stasis": 0.5}},
+    {"id": "Q09", "text": "您容易忘事（健忘）吗？", "weights": {"blood_stasis": 0.5}},
+    {"id": "Q10", "text": "您口唇颜色偏暗吗？", "weights": {"blood_stasis": 0.8}}
+  ]
+}

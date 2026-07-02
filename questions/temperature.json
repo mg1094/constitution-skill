@@ -1,0 +1,16 @@
+{
+  "category": "寒热 / 阳虚阴虚类",
+  "description": "测阳虚 / 阴虚倾向",
+  "questions": [
+    {"id": "T01", "text": "您手脚发凉吗？", "weights": {"yang_deficiency": 1.0}},
+    {"id": "T02", "text": "您胃脘、背部或腰膝部怕冷吗？", "weights": {"yang_deficiency": 1.0}},
+    {"id": "T03", "text": "您感到怕冷、衣服比别人穿得多吗？", "weights": {"yang_deficiency": 1.0}},
+    {"id": "T04", "text": "您比一般人耐受不了寒冷（冬天的寒冷、夏天的冷空调）吗？", "weights": {"yang_deficiency": 1.0}},
+    {"id": "T05", "text": "您比别人容易患感冒吗？", "weights": {"yang_deficiency": 0.5}},
+    {"id": "T06", "text": "您吃（喝）凉东西会感到不舒服或者怕吃凉的吗？", "weights": {"yang_deficiency": 0.5}},
+    {"id": "T07", "text": "您手脚心发热吗？", "weights": {"yin_deficiency": 1.0}},
+    {"id": "T08", "text": "您感觉身体脸上发热吗？", "weights": {"yin_deficiency": 0.8}},
+    {"id": "T09", "text": "您皮肤或口唇干吗？", "weights": {"yin_deficiency": 0.8}},
+    {"id": "T10", "text": "您口唇的颜色比一般人红吗？", "weights": {"yin_deficiency": 0.5}}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "category": "精力 / 气虚类",
+  "description": "测气虚倾向",
+  "questions": [
+    {"id": "E01", "text": "您容易疲乏吗？", "weights": {"qi_deficiency": 1.0}},
+    {"id": "E02", "text": "您容易气短（呼吸短促，接不上气）吗？", "weights": {"qi_deficiency": 1.0}},
+    {"id": "E03", "text": "您容易心慌吗？", "weights": {"qi_deficiency": 0.5}},
+    {"id": "E04", "text": "您容易头晕或站起来眩晕吗？", "weights": {"qi_deficiency": 0.5}},
+    {"id": "E05", "text": "您比一般人容易累吗？", "weights": {"qi_deficiency": 1.0}},
+    {"id": "E06", "text": "您说话声音低弱无力吗？", "weights": {"qi_deficiency": 0.8}},
+    {"id": "E07", "text": "您活动量稍大就容易出虚汗吗？", "weights": {"qi_deficiency": 0.8}},
+    {"id": "E08", "text": "您容易感冒吗？", "weights": {"qi_deficiency": 0.5}}
+  ]
+}

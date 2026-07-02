@@ -1,0 +1,16 @@
+{
+  "category": "湿气 / 痰湿湿热类",
+  "description": "测痰湿 / 湿热倾向",
+  "questions": [
+    {"id": "M01", "text": "您感到胸闷或腹部胀满吗？", "weights": {"phlegm_dampness": 0.8}},
+    {"id": "M02", "text": "您感到身体沉重不轻松或不爽快吗？", "weights": {"phlegm_dampness": 0.8}},
+    {"id": "M03", "text": "您腹部肥满松软吗？", "weights": {"phlegm_dampness": 0.8}},
+    {"id": "M04", "text": "您有额部油脂分泌多的现象吗？", "weights": {"phlegm_dampness": 0.8}},
+    {"id": "M05", "text": "您上眼睑比别人肿（上眼睑有轻微隆起感）吗？", "weights": {"phlegm_dampness": 0.5}},
+    {"id": "M06", "text": "您嘴里有黏黏的感觉吗？", "weights": {"phlegm_dampness": 0.5}},
+    {"id": "M07", "text": "您感到口苦或嘴里有异味吗？", "weights": {"damp_heat": 1.0}},
+    {"id": "M08", "text": "您感到口黏或口甜吗？", "weights": {"damp_heat": 0.5}},
+    {"id": "M09", "text": "您舌苔厚腻或有舌苔厚厚的感觉吗？", "weights": {"damp_heat": 0.8}},
+    {"id": "M10", "text": "您小便时尿道有发热感、尿色浓（深）吗？", "weights": {"damp_heat": 0.8}}
+  ]
+}

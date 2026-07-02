@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "total_questions": 45,
+
+  "categories": {
+    "energy": {
+      "name": "精力 / 气虚类",
+      "file": "energy.json",
+      "type": ["qi_deficiency"]
+    },
+    "temperature": {
+      "name": "寒热 / 阳虚阴虚类",
+      "file": "temperature.json",
+      "type": ["yang_deficiency", "yin_deficiency"]
+    },
+    "moisture": {
+      "name": "湿气 / 痰湿湿热类",
+      "file": "moisture.json",
+      "type": ["phlegm_dampness", "damp_heat"]
+    },
+    "emotion": {
+      "name": "情志 / 气郁血瘀类",
+      "file": "emotion.json",
+      "type": ["qi_stagnation", "blood_stasis"]
+    },
+    "special": {
+      "name": "特禀 / 过敏类",
+      "file": "special.json",
+      "type": ["special"]
+    }
+  }
+}

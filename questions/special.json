@@ -1,0 +1,13 @@
+{
+  "category": "特禀 / 过敏类",
+  "description": "测特禀质（过敏倾向）",
+  "questions": [
+    {"id": "S01", "text": "您没有感冒时也会打喷嚏吗？", "weights": {"special": 0.5}},
+    {"id": "S02", "text": "您没有感冒时也会鼻塞、流鼻涕吗？", "weights": {"special": 0.5}},
+    {"id": "S03", "text": "您会因季节变化、温度变化或异味而咳喘吗？", "weights": {"special": 1.0}},
+    {"id": "S04", "text": "您容易过敏（药物、食物、气味、花粉、季节）吗？", "weights": {"special": 1.0}},
+    {"id": "S05", "text": "您的皮肤容易起荨麻疹（风团、风疹块）吗？", "weights": {"special": 1.0}},
+    {"id": "S06", "text": "您的皮肤因过敏出现过紫癜（紫红色瘀点、瘀斑）吗？", "weights": {"special": 0.8}},
+    {"id": "S07", "text": "您的皮肤一抓就红，并出现抓痕吗？", "weights": {"special": 0.5}}
+  ]
+}
