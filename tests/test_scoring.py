@@ -147,5 +147,43 @@ def test_balanced_low_when_all_high(scorer):
         f"balanced should be last, but is {result['ranked']}"
 
 
+def test_result_has_threshold_fields(scorer):
+    """Result should expose threshold judgment fields."""
+    answers = [3] * 45
+    result = scorer.score(answers)
+    assert "established" in result
+    assert "is_balanced" in result
+    assert "threshold" in result
+    assert result["threshold"] == 30
+    assert set(result["established"].keys()) == set(scorer.TYPE_IDS)
+
+
+def test_no_bias_returns_balanced_main(scorer):
+    """When no biased type reaches the threshold, main type should be balanced."""
+    # All answers = 1 → every biased type scores 0 (< 30), person is healthy
+    answers = [1] * 45
+    result = scorer.score(answers)
+    assert result["is_balanced"] is True
+    assert result["main_type"] == "balanced"
+    # No biased type should be established
+    for t, est in result["established"].items():
+        if t != "balanced":
+            assert est is False
+
+
+def test_biased_main_when_threshold_met(scorer):
+    """When a biased type is clearly established, it should be the main type."""
+    answers = [1] * 45  # baseline: no bias
+    sorted_ids = sorted(scorer.questions.keys())
+    # Push qi_deficiency questions to max
+    for i, q_id in enumerate(sorted_ids):
+        if "qi_deficiency" in scorer.questions[q_id].get("weights", {}):
+            answers[i] = 5
+    result = scorer.score(answers)
+    assert result["is_balanced"] is False
+    assert result["main_type"] == "qi_deficiency"
+    assert result["established"]["qi_deficiency"] is True
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

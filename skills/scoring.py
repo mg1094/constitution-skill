@@ -42,7 +42,6 @@ class ConstitutionScorer:
         self.questions = self._load_all_questions()
 
     def _load_config(self) -> dict:
-        import yaml
         config_path = self.questions_dir / "config.json"
         with open(config_path, encoding="utf-8") as f:
             return json.load(f)
@@ -74,7 +73,9 @@ class ConstitutionScorer:
                 "sub_type": "yang_deficiency",
                 "sub_score": 42.3,
                 "all_scores": {"qi_deficiency": 68.5, ...},
-                "ranked": [("qi_deficiency", 68.5), ...]
+                "ranked": [("qi_deficiency", 68.5), ...],
+                "established": {"qi_deficiency": True, ...},
+                "is_balanced": False
             }
         """
         if len(answers) != len(self.questions):
@@ -91,13 +92,14 @@ class ConstitutionScorer:
         ):
             q = self.questions[q_id]
             for type_id, weight in q.get("weights", {}).items():
-                # Score: (answer - 1) / 4 maps 1-5 → 0-1
+                # (answer - 1) / 4 maps 1-5 → 0-1
                 contribution = (answer - 1) / 4.0 * weight
                 raw_scores[type_id] += contribution
                 max_possible[type_id] += weight
 
-        # 2. Convert to standard score (0-100)
-        # 转化分 = 原始分 / 最大可能分 × 100
+        # 2. Convert to transformation score (转化分, 0-100)
+        # 国标: 转化分 = (原始分 - 题目数) / (题目数 × 4) × 100
+        # 等价于: 加权 (answer-1)/4 的均值 × 100，权重统一时与国标一致
         standard_scores = {}
         for type_id in self.TYPE_IDS:
             if max_possible[type_id] > 0:
@@ -119,19 +121,47 @@ class ConstitutionScorer:
         # 平和质分数 = 100 - 平均偏颇程度
         standard_scores["balanced"] = max(0, 100 - other_avg)
 
-        # 4. Rank
+        # 4. Determine "established" (成立) types per national standard
+        # 转化分 ≥ 30 → 该体质倾向成立
+        ESTABLISHED_THRESHOLD = 30.0
+        established = {
+            t: s >= ESTABLISHED_THRESHOLD for t, s in standard_scores.items()
+        }
+
+        # 5. Rank all types by score
         ranked = sorted(
             standard_scores.items(), key=lambda x: x[1], reverse=True
         )
 
-        # 5. Determine main and sub type
-        # Main: highest score
-        # Sub: second highest score
-        main_type = ranked[0][0]
-        main_score = ranked[0][1]
+        # 6. Determine main and sub type with threshold logic
+        # 若存在成立的偏颇体质 → 取分最高的偏颇体质为主体质
+        # 若所有偏颇体质均不成立 → 主体质为平和质（无明显偏颇）
+        biased_established = [
+            (t, s) for t, s in ranked
+            if t != "balanced" and established[t]
+        ]
 
-        sub_type = ranked[1][0] if len(ranked) > 1 else None
-        sub_score = ranked[1][1] if len(ranked) > 1 else 0
+        if biased_established:
+            main_type, main_score = biased_established[0]
+            # 副体质: 下一高的成立体质（可为平和质或另一偏颇体质）
+            sub_candidates = [
+                (t, s) for t, s in ranked
+                if established[t] and t != main_type
+            ]
+            sub_type, sub_score = (
+                sub_candidates[0] if sub_candidates else (None, 0.0)
+            )
+            is_balanced = False
+        else:
+            # 无偏颇体质成立 → 平和质
+            main_type = "balanced"
+            main_score = standard_scores["balanced"]
+            # 副体质: 分最高的偏颇倾向（即便未成立，也作为次要倾向提示）
+            non_balanced = [(t, s) for t, s in ranked if t != "balanced"]
+            sub_type, sub_score = (
+                non_balanced[0] if non_balanced else (None, 0.0)
+            )
+            is_balanced = True
 
         return {
             "main_type": main_type,
@@ -142,28 +172,24 @@ class ConstitutionScorer:
                 t: round(s, 1) for t, s in standard_scores.items()
             },
             "ranked": [(t, round(s, 1)) for t, s in ranked],
+            "established": established,
+            "is_balanced": is_balanced,
+            "threshold": ESTABLISHED_THRESHOLD,
         }
 
 
 def main():
     """Quick CLI test."""
-    import sys
-    import os
-
-    # Default to balanced answers
-    answers = [3] * 45
-
-    # Test with qi_deficiency skew
-    skewed = answers.copy()
-    for i, q in enumerate(["E01", "E02", "E05", "E06", "E07"]):
-        if q in [qq["id"] for qq in [
-            json.load(open("questions/energy.json"))["questions"][i]
-            for i in range(8)
-        ]]:
-            skewed[i] = 5
-
     scorer = ConstitutionScorer()
-    result = scorer.score(skewed)
+
+    # 中性答案 + 把气虚类题目全部拉满，演示偏颇判定
+    sorted_ids = sorted(scorer.questions.keys())
+    answers = [3] * len(sorted_ids)
+    for i, q_id in enumerate(sorted_ids):
+        if "qi_deficiency" in scorer.questions[q_id].get("weights", {}):
+            answers[i] = 5
+
+    result = scorer.score(answers)
 
     print("=" * 50)
     print("中医体质检测结果")
@@ -172,11 +198,12 @@ def main():
     print(f"  转化分: {result['main_score']}")
     print(f"\n副体质: {scorer.TYPE_NAMES[result['sub_type']]}")
     print(f"  转化分: {result['sub_score']}")
-    print(f"\n所有 9 维得分:")
+    print(f"\n所有 9 维得分 (≥{result['threshold']} 为成立):")
     for t, s in sorted(
         result["all_scores"].items(), key=lambda x: -x[1]
     ):
-        print(f"  {scorer.TYPE_NAMES[t]:6s} {s:6.1f}")
+        mark = "✓" if result["established"][t] else " "
+        print(f"  {mark} {scorer.TYPE_NAMES[t]:6s} {s:6.1f}")
     print("\n⚠️  仅为体质倾向测试，不构成医疗建议。")
 
 

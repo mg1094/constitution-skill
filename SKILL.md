@@ -1,11 +1,11 @@
 # 中医体质检测 Skill
 
-> AI 时代的中医体质测试 · Skill · 60 道题 · 9 大体质 · 雷达图报告
+> AI 时代的中医体质测试 · Skill · 45 道题 · 9 大体质 · 雷达图报告
 
 ## ✨ 这是什么
 
 基于《中医体质分类与判定》标准的 AI 体质检测工具，
-用 60 道题测出用户的 9 大体质倾向（主体质 + 副体质），生成可视化报告和调养建议。
+用 45 道题测出用户的 9 大体质倾向（主体质 + 副体质），生成可视化报告和调养建议。
 
 ⚠️ **仅供娱乐参考，不构成医疗建议。**
 
@@ -19,7 +19,7 @@ name: constitution-test
 version: 1.0.0
 description: |
   中医九大体质检测工具。
-  输入：60 道题的答案（每题 1-5 分）
+  输入：45 道题的答案（每题 1-5 分）
   输出：主体质 + 副体质 + 调养建议
 ```
 
@@ -28,11 +28,11 @@ description: |
 ```python
 from scoring import ConstitutionScorer
 
-answers = [3, 2, 5, 1, 4, ...]  # 60 道题的答案
+answers = [3, 2, 5, 1, 4, ...]  # 45 道题的答案
 result = ConstitutionScorer.score(answers)
 print(result['main_type'])     # 'qi_deficiency'
 print(result['sub_type'])      # 'yang_deficiency'
-print(result['scores'])        # {type: percentage}
+print(result['all_scores'])    # {type: percentage}
 ```
 
 ## 📁 仓库结构
@@ -42,13 +42,12 @@ constitution-skill/
 ├── SKILL.md              # 本文件：Skill 描述
 ├── README.md             # 项目介绍
 ├── LICENSE                # MIT
-├── questions/             # 60 道题库
-│   ├── energy.json        # 精力类（气虚）
-│   ├── temperature.json  # 寒热类（阳虚/阴虚）
-│   ├── moisture.json     # 湿气类（痰湿/湿热）
-│   ├── emotion.json       # 情志类（气郁）
-│   ├── blood.json         # 血液类（血瘀）
-│   ├── special.json       # 特禀类（过敏）
+├── questions/             # 45 道题库
+│   ├── energy.json        # 精力类（气虚，8 题）
+│   ├── temperature.json  # 寒热类（阳虚/阴虚，10 题）
+│   ├── moisture.json     # 湿气类（痰湿/湿热，10 题）
+│   ├── emotion.json       # 情志类（气郁/血瘀，10 题）
+│   ├── special.json       # 特禀类（过敏，7 题）
 │   └── config.json        # 体质 → 题号映射
 ├── skills/                # 主代码
 │   ├── __init__.py
@@ -57,12 +56,13 @@ constitution-skill/
 │   └── radar.py           # 雷达图（SVG）
 ├── assets/
 │   └── constitution-data.json  # 9 体质数据
+├── web/
+│   └── index.html         # 交互式 H5 界面
 ├── output/                # 输出示例
 │   ├── report-sample.md   # 报告样例
 │   └── radar-sample.svg   # 雷达图样例
 └── examples/
-    ├── run-cli.py         # 命令行版本
-    └── sample-output.md   # 实际输出样例
+    └── run-cli.py         # 命令行版本
 ```
 
 ## 🎯 9 大体质
@@ -92,9 +92,10 @@ constitution-skill/
 
 **计算**：
 1. 累加每体质的原始得分
-2. 转化为转化分 = (原始分 - 题目数) / 题目数 × 100
+2. 转化为转化分 = (原始分 - 题目数) / (题目数 × 4) × 100（国标 ZYYXH/T 157-2009）
 3. 转化分 ≥ 30 → 该体质成立
-4. 取最高分为主体质，第二高为副体质
+4. 若存在成立的偏颇体质，取最高者为主体质；若全部偏颇体质不成立，主体质为平和质
+5. 副体质取下一高的成立体质
 
 ## 📐 输出报告（示例）
 

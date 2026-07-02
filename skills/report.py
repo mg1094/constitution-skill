@@ -55,6 +55,7 @@ def generate_report(score_result: dict) -> str:
 | 主体质转化分 | {score_result['main_score']} |
 | 副体质 | {sub_data.get('name', sub_type) if sub_type else '—'} |
 | 副体质转化分 | {score_result.get('sub_score', 0)} |
+| 整体判定 | {"平和质（无明显偏颇）" if score_result.get('is_balanced') else "偏颇体质（需调养）"} |
 
 ---
 
@@ -110,16 +111,21 @@ def generate_report(score_result: dict) -> str:
 
     md += """## 📊 你的 9 维得分全图
 
-| 体质 | 得分 | 类型 |
+> 转化分 ≥ 30 为该体质倾向成立（偏颇）；全部偏颇体质不成立时，主体质为平和质。
+
+| 体质 | 转化分 | 判定 |
 |------|------|------|
 """
     sorted_scores = sorted(
         all_scores.items(), key=lambda x: x[1], reverse=True
     )
+    threshold = score_result.get("threshold", 30)
+    established = score_result.get("established", {})
     for type_id, score in sorted_scores:
         name = TYPE_NAMES.get(type_id, type_id)
-        score_type = "偏颇" if score >= 30 else "平和"
-        md += f"| {name} | {score} | {score_type} |\n"
+        is_est = established.get(type_id, score >= threshold)
+        verdict = "✓ 偏颇成立" if is_est else "— 不成立"
+        md += f"| {name} | {score} | {verdict} |\n"
 
     md += """
 ---
@@ -160,7 +166,7 @@ def generate_list(items: list) -> str:
 
 
 if __name__ == "__main__":
-    from scoring import ConstitutionScorer
+    from skills.scoring import ConstitutionScorer
     test_answers = [3] * 45
     skewed = test_answers.copy()
     skewed[0] = 5
