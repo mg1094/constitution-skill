@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中医体质检测 · 60秒测出你的体质</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #F0F9FF 0%, #ECFEFF 50%, #F0FDF4 100%);
+    min-height: 100vh;
+    color: #0F172A;
+    padding: 20px;
+  }
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+  .title {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #06B6D4, #0EA5E9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #64748B;
+  }
+  .progress-bar {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.08);
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .progress-text {
+    font-size: 14px;
+    color: #64748B;
+  }
+  .progress-text strong {
+    color: #06B6D4;
+    font-weight: 700;
+  }
+  .progress-track {
+    height: 6px;
+    background: #F1F5F9;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #06B6D4, #84CC16);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+  .question-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.06);
+  }
+  .q-num {
+    display: inline-block;
+    background: #F0F9FF;
+    color: #06B6D4;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .q-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0F172A;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    background: #F8FAFC;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    color: #475569;
+  }
+  .option:hover {
+    background: #F0F9FF;
+  }
+  .option.selected {
+    background: #F0F9FF;
+    border-color: #06B6D4;
+    color: #0F172A;
+    font-weight: 600;
+  }
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-prev {
+    background: #F1F5F9;
+    color: #64748B;
+  }
+  .btn-prev:hover:not(:disabled) {
+    background: #E2E8F0;
+  }
+  .btn-next {
+    background: linear-gradient(90deg, #06B6D4, #0EA5E9);
+    color: white;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  }
+  .btn-next:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+  }
+  .welcome {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .welcome h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .welcome p {
+    color: #64748B;
+    margin-bottom: 32px;
+  }
+  .start-btn {
+    padding: 16px 48px;
+    background: linear-gradient(90deg, #06B6D4, #0EA5E9);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+    transition: all 0.2s;
+  }
+  .start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(6, 182, 212, 0.4);
+  }
+  .result-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.06);
+  }
+  .result-title {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .result-main {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .result-type {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #06B6D4, #0EA5E9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .result-tagline {
+    font-size: 14px;
+    color: #64748B;
+  }
+  .result-section {
+    margin-bottom: 20px;
+  }
+  .result-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .result-text {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+  }
+  .result-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .feature-tag {
+    background: #F0F9FF;
+    color: #0E7490;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+  .radar-box {
+    text-align: center;
+    margin: 20px 0;
+  }
+  .radar-box svg {
+    max-width: 100%;
+    height: auto;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    padding: 12px;
+  }
+  .restart-btn {
+    width: 100%;
+    padding: 14px;
+    background: #F1F5F9;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 12px;
+    cursor: pointer;
+  }
+  .disclaimer {
+    background: #FEF3C7;
+    border: 1px solid #FCD34D;
+    color: #92400E;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title">中医体质检测</div>
+    <div class="subtitle">45 道题 · 60 秒 · 测出你的中医体质</div>
+  </div>
+
+  <div id="app"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // 精力 / 气虚类
+  { id: "E01", text: "您容易疲乏吗？", weights: { qi_deficiency: 1.0 } },
+  { id: "E02", text: "您容易气短（呼吸短促，接不上气）吗？", weights: { qi_deficiency: 1.0 } },
+  { id: "E03", text: "您容易心慌吗？", weights: { qi_deficiency: 0.5 } },
+  { id: "E04", text: "您容易头晕或站起来眩晕吗？", weights: { qi_deficiency: 0.5 } },
+  { id: "E05", text: "您比一般人容易累吗？", weights: { qi_deficiency: 1.0 } },
+  { id: "E06", text: "您说话声音低弱无力吗？", weights: { qi_deficiency: 0.8 } },
+  { id: "E07", text: "您活动量稍大就容易出虚汗吗？", weights: { qi_deficiency: 0.8 } },
+  { id: "E08", text: "您容易感冒吗？", weights: { qi_deficiency: 0.5 } },
+  // 寒热 / 阳虚阴虚类
+  { id: "T01", text: "您手脚发凉吗？", weights: { yang_deficiency: 1.0 } },
+  { id: "T02", text: "您胃脘、背部或腰膝部怕冷吗？", weights: { yang_deficiency: 1.0 } },
+  { id: "T03", text: "您感到怕冷、衣服比别人穿得多吗？", weights: { yang_deficiency: 1.0 } },
+  { id: "T04", text: "您比一般人耐受不了寒冷吗？", weights: { yang_deficiency: 1.0 } },
+  { id: "T05", text: "您比别人容易患感冒吗？", weights: { yang_deficiency: 0.5 } },
+  { id: "T06", text: "您吃凉东西会不舒服吗？", weights: { yang_deficiency: 0.5 } },
+  { id: "T07", text: "您手脚心发热吗？", weights: { yin_deficiency: 1.0 } },
+  { id: "T08", text: "您感觉身体脸上发热吗？", weights: { yin_deficiency: 0.8 } },
+  { id: "T09", text: "您皮肤或口唇干吗？", weights: { yin_deficiency: 0.8 } },
+  { id: "T10", text: "您口唇颜色比一般人红吗？", weights: { yin_deficiency: 0.5 } },
+  // 湿气 / 痰湿湿热类
+  { id: "M01", text: "您感到胸闷或腹部胀满吗？", weights: { phlegm_dampness: 0.8 } },
+  { id: "M02", text: "您感到身体沉重不轻松吗？", weights: { phlegm_dampness: 0.8 } },
+  { id: "M03", text: "您腹部肥满松软吗？", weights: { phlegm_dampness: 0.8 } },
+  { id: "M04", text: "您有额部油脂分泌多的现象吗？", weights: { phlegm_dampness: 0.8 } },
+  { id: "M05", text: "您上眼睑比别人肿吗？", weights: { phlegm_dampness: 0.5 } },
+  { id: "M06", text: "您嘴里有黏黏的感觉吗？", weights: { phlegm_dampness: 0.5 } },
+  { id: "M07", text: "您感到口苦或嘴里有异味吗？", weights: { damp_heat: 1.0 } },
+  { id: "M08", text: "您感到口黏或口甜吗？", weights: { damp_heat: 0.5 } },
+  { id: "M09", text: "您舌苔厚腻吗？", weights: { damp_heat: 0.8 } },
+  { id: "M10", text: "您小便时尿道有发热感吗？", weights: { damp_heat: 0.8 } },
+  // 情志 / 气郁血瘀类
+  { id: "Q01", text: "您感到闷闷不乐、情绪低沉吗？", weights: { qi_stagnation: 1.0 } },
+  { id: "Q02", text: "您容易精神紧张、焦虑不安吗？", weights: { qi_stagnation: 0.8 } },
+  { id: "Q03", text: "您多愁善感、感情脆弱吗？", weights: { qi_stagnation: 0.5 } },
+  { id: "Q04", text: "您容易感到害怕或受到惊吓吗？", weights: { qi_stagnation: 0.5 } },
+  { id: "Q05", text: "您胁肋部或乳房胀痛吗？", weights: { qi_stagnation: 0.8 } },
+  { id: "Q06", text: "您无缘无故叹气吗？", weights: { qi_stagnation: 0.8 } },
+  { id: "Q07", text: "您面色晦暗或容易出现褐斑吗？", weights: { blood_stasis: 1.0 } },
+  { id: "Q08", text: "您会出现黑眼圈吗？", weights: { blood_stasis: 0.5 } },
+  { id: "Q09", text: "您容易忘事吗？", weights: { blood_stasis: 0.5 } },
+  { id: "Q10", text: "您口唇颜色偏暗吗？", weights: { blood_stasis: 0.8 } },
+  // 特禀 / 过敏类
+  { id: "S01", text: "您没有感冒时也会打喷嚏吗？", weights: { special: 0.5 } },
+  { id: "S02", text: "您没有感冒时也会鼻塞、流鼻涕吗？", weights: { special: 0.5 } },
+  { id: "S03", text: "您会因季节/温度变化咳喘吗？", weights: { special: 1.0 } },
+  { id: "S04", text: "您容易过敏吗？", weights: { special: 1.0 } },
+  { id: "S05", text: "您的皮肤容易起荨麻疹吗？", weights: { special: 1.0 } },
+  { id: "S06", text: "您的皮肤因过敏出现过紫癜吗？", weights: { special: 0.8 } },
+  { id: "S07", text: "您的皮肤一抓就红吗？", weights: { special: 0.5 } },
+];
+
+const TYPE_NAMES = {
+  qi_deficiency: "气虚质",
+  yang_deficiency: "阳虚质",
+  yin_deficiency: "阴虚质",
+  phlegm_dampness: "痰湿质",
+  damp_heat: "湿热质",
+  blood_stasis: "血瘀质",
+  qi_stagnation: "气郁质",
+  special: "特禀质",
+  balanced: "平和质",
+};
+
+const CONSTITUTION_DATA = {
+  qi_deficiency: {
+    emoji: "🫁",
+    tagline: "容易累，说话没劲",
+    features: ["容易疲乏", "说话声音低弱", "容易出虚汗", "容易感冒", "呼吸短促"],
+    advice: {
+      diet: "多吃补气食物：山药、黄芪、大枣、蜂蜜",
+      exercise: "散步、太极、八段锦（避免剧烈运动）",
+      lifestyle: "充足睡眠，午休 30 分钟",
+    },
+  },
+  yang_deficiency: {
+    emoji: "❄️",
+    tagline: "怕冷，手脚冰凉",
+    features: ["怕冷", "手脚冰凉", "手脚不温", "容易腹泻", "精神不振"],
+    advice: {
+      diet: "温阳散寒：生姜、羊肉、韭菜、桂圆",
+      exercise: "慢跑、太极、泡脚、晒太阳",
+      lifestyle: "注意保暖，晚上泡脚，早睡早起",
+    },
+  },
+  yin_deficiency: {
+    emoji: "🔥",
+    tagline: "手脚心热，干燥",
+    features: ["手脚心热", "口干咽燥", "喜冷饮", "大便干燥", "皮肤干燥"],
+    advice: {
+      diet: "滋阴润燥：银耳、百合、莲子、麦冬、梨",
+      exercise: "瑜伽、太极、冥想（避免剧烈运动）",
+      lifestyle: "充足睡眠，避高温，多喝水",
+    },
+  },
+  phlegm_dampness: {
+    emoji: "💧",
+    tagline: "胖、困倦、油腻",
+    features: ["形体肥胖", "腹部松软", "面部油脂多", "胸闷", "痰多", "易困倦"],
+    advice: {
+      diet: "化痰祛湿：薏苡仁、赤小豆、冬瓜、荷叶",
+      exercise: "有氧运动（慢跑、游泳、爬山，出汗排湿）",
+      lifestyle: "远离潮湿环境，不要久坐",
+    },
+  },
+  damp_heat: {
+    emoji: "🌶️",
+    tagline: "长痘、口苦、黏腻",
+    features: ["面部油光", "长痘", "口苦口干", "舌苔黄腻", "大便粘滞", "小便黄"],
+    advice: {
+      diet: "清热利湿：薏苡仁、赤小豆、绿豆、苦瓜",
+      exercise: "游泳、爬山（避免高温高湿环境运动）",
+      lifestyle: "戒烟限酒，清淡饮食，早睡早起",
+    },
+  },
+  blood_stasis: {
+    emoji: "🩸",
+    tagline: "面色晦暗、易瘀斑",
+    features: ["面色晦暗", "易生褐斑", "易瘀青", "肤色暗沉", "易疼痛", "唇色偏暗"],
+    advice: {
+      diet: "活血化瘀：山楂、红花、玫瑰花茶、黑木耳",
+      exercise: "有氧运动、瑜伽（促进血液循环）",
+      lifestyle: "保暖，心情舒畅，规律作息",
+    },
+  },
+  qi_stagnation: {
+    emoji: "🌧️",
+    tagline: "心情差、爱叹气",
+    features: ["闷闷不乐", "情绪低沉", "易紧张", "叹气", "胸胁胀痛", "多愁善感"],
+    advice: {
+      diet: "疏肝理气：玫瑰花茶、陈皮、柑橘",
+      exercise: "跑步、瑜伽、跳舞（出汗排郁）",
+      lifestyle: "多社交，多倾诉，保持心情舒畅",
+    },
+  },
+  special: {
+    emoji: "🤧",
+    tagline: "过敏体质",
+    features: ["容易过敏", "鼻塞打喷嚏", "荨麻疹", "皮肤敏感", "过敏性鼻炎"],
+    advice: {
+      diet: "益气固表：黄芪、灵芝、大枣、蜂蜜",
+      exercise: "散步、瑜伽（避免高强度运动诱发过敏）",
+      lifestyle: "避开过敏原，戴口罩，保持环境清洁",
+    },
+  },
+  balanced: {
+    emoji: "🌿",
+    tagline: "最健康的体质",
+    features: ["面色润泽", "精力充沛", "体形匀称", "睡眠良好", "二便正常"],
+    advice: {
+      diet: "饮食清淡，饮食有节，不偏食，不过饥过饱",
+      exercise: "坚持运动（每周 3-5 次，每次 30-60 分钟）",
+      lifestyle: "生活规律，睡眠充足，戒烟限酒，心态平和",
+    },
+  },
+};
+
+const OPTIONS = [
+  { value: 1, label: "没有" },
+  { value: 2, label: "很少" },
+  { value: 3, label: "有时" },
+  { value: 4, label: "经常" },
+  { value: 5, label: "总是" },
+];
+
+let currentIdx = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+
+const root = document.getElementById("app");
+
+function render() {
+  if (currentIdx === -1) {
+    renderResult();
+    return;
+  }
+  if (currentIdx === QUESTIONS.length) {
+    renderResult();
+    return;
+  }
+  renderQuestion();
+}
+
+function renderStart() {
+  root.innerHTML = `
+    <div class="welcome">
+      <h2>5 分钟测出你的中医体质</h2>
+      <p>45 道简单判断题 · 5 选 1 · 出具 9 大体质雷达图</p>
+      <button class="start-btn" onclick="startQuiz()">开始测试</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  currentIdx = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  render();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentIdx];
+  const progress = Math.round(((currentIdx + 1) / QUESTIONS.length) * 100);
+  root.innerHTML = `
+    <div class="progress-bar">
+      <div class="progress-info">
+        <span class="progress-text">第 <strong>${currentIdx + 1}</strong> / ${QUESTIONS.length} 题</span>
+        <span class="progress-text">${progress}%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width: ${progress}%"></div>
+      </div>
+    </div>
+    <div class="question-card">
+      <span class="q-num">${q.id}</span>
+      <div class="q-text">${q.text}</div>
+      <div class="options">
+        ${OPTIONS.map((opt, i) => `
+          <div class="option ${answers[currentIdx] === opt.value ? "selected" : ""}"
+               onclick="selectOption(${opt.value})">
+            ${opt.label}
+          </div>
+        `).join("")}
+      </div>
+      <div class="nav-bar">
+        <button class="btn btn-prev" onclick="prev()" ${currentIdx === 0 ? "disabled" : ""}>上一题</button>
+        <button class="btn btn-next" onclick="next()" ${answers[currentIdx] === null ? "disabled" : ""}>
+          ${currentIdx === QUESTIONS.length - 1 ? "查看结果" : "下一题"}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function selectOption(value) {
+  answers[currentIdx] = value;
+  renderQuestion();
+  // Auto-advance after a brief moment
+  setTimeout(() => {
+    if (currentIdx < QUESTIONS.length - 1) {
+      next();
+    }
+  }, 350);
+}
+
+function next() {
+  if (currentIdx < QUESTIONS.length - 1) {
+    currentIdx++;
+    render();
+  } else {
+    currentIdx = QUESTIONS.length;
+    render();
+  }
+}
+
+function prev() {
+  if (currentIdx > 0) {
+    currentIdx--;
+    render();
+  }
+}
+
+function scoreAnswers() {
+  // 1. Accumulate weighted scores per type
+  const rawScores = {};
+  const maxPossible = {};
+  const typeIds = Object.keys(TYPE_NAMES);
+  for (const t of typeIds) {
+    rawScores[t] = 0;
+    maxPossible[t] = 0;
+  }
+
+  for (let i = 0; i < QUESTIONS.length; i++) {
+    const q = QUESTIONS[i];
+    const a = answers[i];
+    if (a === null) continue;
+    for (const [typeId, weight] of Object.entries(q.weights)) {
+      const contribution = ((a - 1) / 4.0) * weight;
+      rawScores[typeId] += contribution;
+      maxPossible[typeId] += weight;
+    }
+  }
+
+  // 2. Convert to 0-100
+  const standardScores = {};
+  for (const t of typeIds) {
+    if (maxPossible[t] > 0) {
+      standardScores[t] = (rawScores[t] / maxPossible[t]) * 100;
+    } else {
+      standardScores[t] = 0;
+    }
+  }
+
+  // 3. Balanced special handling
+  const otherTypes = typeIds.filter((t) => t !== "balanced");
+  const otherAvg = otherTypes.reduce((s, t) => s + standardScores[t], 0) / otherTypes.length;
+  standardScores.balanced = Math.max(0, 100 - otherAvg);
+
+  // 4. Rank
+  const ranked = Object.entries(standardScores).sort((a, b) => b[1] - a[1]);
+  return {
+    main: ranked[0],
+    sub: ranked[1],
+    all: standardScores,
+    ranked,
+  };
+}
+
+function renderResult() {
+  const result = scoreAnswers();
+  const [mainId, mainScore] = result.main;
+  const [subId, subScore] = result.sub;
+  const mainData = CONSTITUTION_DATA[mainId];
+  const subData = CONSTITUTION_DATA[subId];
+  const allScores = result.all;
+  const ranked = result.ranked;
+
+  // Generate radar chart SVG
+  const cx = 300, cy = 300, R = 180;
+  const labelR = 230;
+  const ids = Object.keys(TYPE_NAMES);
+  const n = ids.length;
+  const radarSvg = (() => {
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">`;
+    svg += '<defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0F172A"/><stop offset="100%" stop-color="#1E293B"/></linearGradient><linearGradient id="radar" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#06B6D4"/><stop offset="50%" stop-color="#84CC16"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs>';
+    svg += '<rect width="600" height="600" fill="url(#bg)"/>';
+    for (let r of [0.25, 0.5, 0.75, 1.0]) {
+      svg += `<circle cx="${cx}" cy="${cy}" r="${r * R}" fill="none" stroke="#475569" stroke-width="0.5" stroke-dasharray="2 4" opacity="0.5"/>`;
+    }
+    const points = [];
+    for (let i = 0; i < n; i++) {
+      const angle = -Math.PI / 2 + (2 * Math.PI * i) / n;
+      const x = cx + R * Math.cos(angle);
+      const y = cy + R * Math.sin(angle);
+      points.push({ x, y });
+      svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#475569" stroke-width="0.5" opacity="0.5"/>`;
+    }
+    const polyPoints = points
+      .map((p, i) => {
+        const s = Math.min(100, Math.max(0, allScores[ids[i]]));
+        const ratio = s / 100;
+        return `${cx + R * ratio * Math.cos(-Math.PI / 2 + (2 * Math.PI * i) / n)},${cy + R * ratio * Math.sin(-Math.PI / 2 + (2 * Math.PI * i) / n)}`;
+      })
+      .join(" ");
+    svg += `<polygon points="${polyPoints}" fill="url(#radar)" fill-opacity="0.4" stroke="#06B6D4" stroke-width="2"/>`;
+    const labelMap = { qi_deficiency: "气虚", yang_deficiency: "阳虚", yin_deficiency: "阴虚", phlegm_dampness: "痰湿", damp_heat: "湿热", blood_stasis: "血瘀", qi_stagnation: "气郁", special: "特禀", balanced: "平和" };
+    points.forEach((p, i) => {
+      const label = labelMap[ids[i]];
+      let tx = cx + labelR * Math.cos(-Math.PI / 2 + (2 * Math.PI * i) / n);
+      let ty = cy + labelR * Math.sin(-Math.PI / 2 + (2 * Math.PI * i) / n);
+      let anchor = "middle";
+      if (tx < cx - 10) anchor = "end";
+      else if (tx > cx + 10) anchor = "start";
+      ty += 5;
+      svg += `<text x="${tx}" y="${ty}" font-family="sans-serif" font-size="14" fill="#94A3B8" text-anchor="${anchor}" font-weight="bold">${label}</text>`;
+    });
+    svg += "</svg>";
+    return svg;
+  })();
+
+  root.innerHTML = `
+    <div class="result-card">
+      <div class="result-title">🎉 你的中医体质报告</div>
+
+      <div class="result-main">
+        <div style="font-size: 14px; color: #94A3B8;">主体质</div>
+        <div class="result-type">${mainData.emoji} ${TYPE_NAMES[mainId]}</div>
+        <div class="result-tagline">${mainData.tagline}</div>
+        <div style="font-size: 14px; color: #06B6D4; margin-top: 8px;">转化分: ${mainScore.toFixed(1)}</div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <span style="background: #F0F9FF; color: #0E7490; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+          副体质: ${subData.emoji} ${TYPE_NAMES[subId]} (${subScore.toFixed(1)})
+        </span>
+      </div>
+
+      <div class="radar-box">${radarSvg}</div>
+
+      <div class="result-section">
+        <div class="result-section-title">主要表现</div>
+        <div class="result-features">
+          ${mainData.features.map((f) => `<span class="feature-tag">${f}</span>`).join("")}
+        </div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-section-title">🌿 饮食调养</div>
+        <div class="result-text">${mainData.advice.diet}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-section-title">🏃 运动建议</div>
+        <div class="result-text">${mainData.advice.exercise}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-section-title">🌙 作息建议</div>
+        <div class="result-text">${mainData.advice.lifestyle}</div>
+      </div>
+
+      <div class="disclaimer">
+        ⚠️ 本报告由 AI 生成，<strong>仅供娱乐和健康参考</strong>，<br>
+        <strong>不构成医疗诊断、治疗或预防建议</strong>。<br>
+        如有健康问题，请咨询专业医生。
+      </div>
+
+      <button class="restart-btn" onclick="currentIdx = -1; renderStart();">
+        重新测试
+      </button>
+    </div>
+
+    <div class="result-card" style="margin-top: 20px;">
+      <div class="result-section-title">📊 你的 9 维得分全图</div>
+      <table style="width: 100%; font-size: 14px; color: #475569;">
+        ${ranked.map(([id, score]) => `
+          <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 10px 0;">${CONSTITUTION_DATA[id].emoji} ${TYPE_NAMES[id]}</td>
+            <td style="padding: 10px 0; text-align: right; font-weight: 600; color: ${score >= 30 ? "#06B6D4" : "#94A3B8"};">
+              ${score.toFixed(1)}
+            </td>
+            <td style="padding: 10px 0; text-align: right; color: ${score >= 30 ? "#06B6D4" : "#94A3B8"};">
+              ${score >= 30 ? "偏颇" : "平和"}
+            </td>
+          </tr>
+        `).join("")}
+      </table>
+    </div>
+  `;
+}
+
+renderStart();
+</script>
+</body>
+</html>

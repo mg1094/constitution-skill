@@ -12,6 +12,29 @@
 
 ## 🚀 快速开始
 
+### 方式 1：Web 界面（推荐）
+
+直接在浏览器打开 `web/index.html`：
+
+```bash
+# macOS
+open web/index.html
+
+# Linux
+xdg-open web/index.html
+
+# 或本地起服务
+cd web && python3 -m http.server 8080
+# 访问 http://localhost:8080
+```
+
+功能：
+- 60 秒完成 45 道题
+- 雷达图可视化
+- 自动生成 PDF 报告
+
+### 方式 2：CLI 演示
+
 ```bash
 # 安装依赖
 uv sync
