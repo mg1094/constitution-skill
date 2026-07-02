@@ -109,12 +109,22 @@ class ConstitutionScorer:
             else:
                 standard_scores[type_id] = 0.0
 
-        # 3. Rank
+        # 3. Special handling for balanced type
+        # 平和质是"什么都不偏"的状态
+        # 8 种体质得分都高 = 偏颇 → 平和质低
+        # 8 种体质得分都低 = 不偏颇 → 平和质高
+        # 用其他 8 种体质的平均分反映"偏颇程度"
+        other_types = [t for t in self.TYPE_IDS if t != "balanced"]
+        other_avg = sum(standard_scores[t] for t in other_types) / len(other_types)
+        # 平和质分数 = 100 - 平均偏颇程度
+        standard_scores["balanced"] = max(0, 100 - other_avg)
+
+        # 4. Rank
         ranked = sorted(
             standard_scores.items(), key=lambda x: x[1], reverse=True
         )
 
-        # 4. Determine main and sub type
+        # 5. Determine main and sub type
         # Main: highest score
         # Sub: second highest score
         main_type = ranked[0][0]
