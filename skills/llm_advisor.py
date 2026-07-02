@@ -13,7 +13,6 @@ LLM 体质解读模块
 """
 
 import os
-import json
 from typing import Optional
 
 try:
@@ -23,7 +22,6 @@ except ImportError:
     HAS_OPENAI = False
 
 
-# 体质中文名映射
 TYPE_NAMES = {
     "qi_deficiency": "气虚质",
     "yang_deficiency": "阳虚质",
@@ -62,7 +60,6 @@ def build_user_prompt(result: dict) -> str:
     established = result.get("established", {})
     is_balanced = result.get("is_balanced", False)
 
-    # 构建得分表
     score_lines = []
     for type_id, score in sorted(all_scores.items(), key=lambda x: -x[1]):
         name = TYPE_NAMES.get(type_id, type_id)
@@ -95,7 +92,6 @@ def build_user_prompt(result: dict) -> str:
 8. **免责声明**
 
 请用 Markdown 格式输出，语言温暖亲切。"""
-
     return prompt
 
 
@@ -120,7 +116,6 @@ def generate_llm_report(
     if not HAS_OPENAI:
         return _fallback_report(result)
 
-    # 读取配置
     api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
     base_url = base_url or os.environ.get(
         "OPENAI_BASE_URL",
@@ -133,9 +128,7 @@ def generate_llm_report(
 
     try:
         client = OpenAI(api_key=api_key, base_url=base_url)
-
         user_prompt = build_user_prompt(result)
-
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -145,13 +138,10 @@ def generate_llm_report(
             temperature=0.7,
             max_tokens=2000,
         )
-
         return response.choices[0].message.content
-
     except Exception as e:
-        # LLM 调用失败时回退到模板报告
         report = _fallback_report(result)
-        return f"{report}\n\n---\n\n⚠️ AI 解读生成失败（{e}），以上为基础模板报告。"
+        return f"{report}\n\n---\n\n⚠️ AI 解读生成失败（{e}），以下为基础模板报告。"
 
 
 def _fallback_report(result: dict) -> str:
@@ -165,21 +155,6 @@ def _fallback_report(result: dict) -> str:
     main_name = TYPE_NAMES.get(main_type, main_type)
     sub_name = TYPE_NAMES.get(sub_type, sub_type)
 
-    # 基础建议数据
-    ADVICE = {
-        "qi_deficiency": {
-            diet: "多吃山药、黄芪、大枣、蜂蜜；少吃生冷、油腻",
-            exercise: "散步、太极、八段锦；避免剧烈运动",
-            lifestyle: "充足睡眠，午休 30 分钟，避免过度劳累",
-        }
-        for diet, exercise, lifestyle in [(
-            "多吃山药、黄芪、大枣、蜂蜜；少吃生冷、油腻",
-            "散步、太极、八段锦；避免剧烈运动",
-            "充足睡眠，午休 30 分钟，避免过度劳累",
-        )]
-    }
-
-    # 简化版建议
     SIMPLE_ADVICE = {
         "qi_deficiency": ("补气：山药、黄芪、大枣", "散步、太极、八段锦", "充足睡眠，午休 30 分钟"),
         "yang_deficiency": ("温阳：生姜、羊肉、韭菜", "慢跑、泡脚、晒太阳", "注意保暖，晚泡脚"),
