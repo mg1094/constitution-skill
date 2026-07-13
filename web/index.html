@@ -448,6 +448,41 @@ const TYPE_ORDER = Object.keys(TYPE_NAMES);
 let currentIdx = 0;
 let answers = new Array(QUESTIONS.length).fill(null);
 const root = document.getElementById("app");
+const STORAGE_KEY = "tcm_quiz_progress";
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ currentIdx, answers }));
+  } catch (e) { /* ignore */ }
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.answers) || data.answers.length !== QUESTIONS.length) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+function clearProgress() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+}
+
+function showToast(message, duration = 2200) {
+  let toast = document.getElementById("toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.style.cssText = "position:fixed;left:50%;bottom:36px;transform:translateX(-50%);background:rgba(43,38,32,0.92);color:#FBF6EA;padding:12px 22px;border-radius:999px;font-size:13px;letter-spacing:1px;box-shadow:0 8px 24px rgba(0,0,0,0.18);opacity:0;transition:opacity .3s ease;z-index:1000;";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  requestAnimationFrame(() => { toast.style.opacity = "1"; });
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = "0"; }, duration);
+}
 
 function render() {
   if (currentIdx >= QUESTIONS.length) { renderResult(); return; }
@@ -455,6 +490,13 @@ function render() {
 }
 
 function renderStart() {
+  const progress = loadProgress();
+  const hasProgress = progress && progress.currentIdx > 0 && progress.currentIdx < QUESTIONS.length;
+  const resumeBtn = hasProgress
+    ? `<button class="btn-primary" onclick="resumeQuiz()" style="margin-bottom:12px;">继 续 上 次 测 试</button>
+       <button class="btn-ghost" onclick="startQuiz(true)" style="display:block;margin:0 auto;padding:10px 26px;border-radius:999px;font-family:var(--sans);font-weight:600;font-size:13px;letter-spacing:1px;color:var(--ink-soft);border:1.5px solid var(--line);background:transparent;cursor:pointer;">重 新 开 始</button>`
+    : `<button class="btn-primary" onclick="startQuiz(true)">开 始 辨 识</button>`;
+
   root.innerHTML = `
     <div class="card welcome anim">
       <div class="welcome-mark">壹 · 辨体质 · 知调养</div>
@@ -465,12 +507,21 @@ function renderStart() {
         <div class="meta-item"><div class="meta-num">9</div><div class="meta-lbl">大体质</div></div>
         <div class="meta-item"><div class="meta-num">5</div><div class="meta-lbl">分钟</div></div>
       </div>
-      <button class="btn-primary" onclick="startQuiz()">开 始 辨 识</button>
+      ${resumeBtn}
     </div>
   `;
 }
 
-function startQuiz() {
+function resumeQuiz() {
+  const data = loadProgress();
+  if (!data) { startQuiz(true); return; }
+  currentIdx = data.currentIdx;
+  answers = data.answers;
+  render();
+}
+
+function startQuiz(reset = false) {
+  if (reset) clearProgress();
   currentIdx = 0;
   answers = new Array(QUESTIONS.length).fill(null);
   render();
@@ -514,14 +565,32 @@ function renderQuestion() {
 
 function selectOption(value) {
   answers[currentIdx] = value;
+  saveProgress();
   renderQuestion();
   setTimeout(() => { if (currentIdx < QUESTIONS.length - 1) next(); }, 280);
 }
 function next() {
-  if (currentIdx < QUESTIONS.length - 1) { currentIdx++; render(); }
-  else { currentIdx = QUESTIONS.length; render(); }
+  if (currentIdx < QUESTIONS.length - 1) { currentIdx++; saveProgress(); render(); }
+  else { currentIdx = QUESTIONS.length; clearProgress(); render(); }
 }
-function prev() { if (currentIdx > 0) { currentIdx--; render(); } }
+function prev() { if (currentIdx > 0) { currentIdx--; saveProgress(); render(); } }
+
+// ---------- Keyboard shortcuts ----------
+document.addEventListener("keydown", (e) => {
+  if (currentIdx < 0 || currentIdx >= QUESTIONS.length) return;
+  if (!document.querySelector(".question")) return;
+  const key = e.key;
+  if (key >= "1" && key <= "5") {
+    e.preventDefault();
+    selectOption(parseInt(key, 10));
+  } else if (key === "ArrowRight" || key === "Enter") {
+    e.preventDefault();
+    if (answers[currentIdx] !== null) next();
+  } else if (key === "ArrowLeft") {
+    e.preventDefault();
+    prev();
+  }
+});
 
 // ---------- Scoring (mirrors skills/scoring.py) ----------
 function scoreAnswers() {
@@ -907,14 +976,71 @@ function saveAPIConfig() {
 function restart() {
   currentIdx = 0;
   answers = new Array(QUESTIONS.length).fill(null);
+  clearProgress();
   renderStart();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function shareReport() {
-  // 轻量"保存"：尝试打印为 PDF，退化为提示
-  try { window.print(); }
-  catch (e) { alert("请使用浏览器「打印」功能，另存为 PDF 以保存报告。"); }
+function generateReportMarkdown() {
+  const r = scoreAnswers();
+  const mainData = CONSTITUTION_DATA[r.mainType];
+  const subData = r.subType ? CONSTITUTION_DATA[r.subType] : null;
+  const date = new Date().toLocaleString("zh-CN");
+
+  let md = `# 中医体质检测报告\n\n`;
+  md += `**检测时间**：${date}\n\n`;
+  md += `## 主体质：${mainData.emoji} ${TYPE_NAMES[r.mainType]}\n\n`;
+  md += `- 转化分：${r.mainScore.toFixed(1)}\n`;
+  md += `- 标签：${mainData.tagline}\n`;
+  md += `- 整体判定：${r.isBalanced ? "🌿 平和体质 · 无明显偏颇" : "⚠ 偏颇体质 · 建议调养"}\n\n`;
+
+  if (subData) {
+    md += `## 副体质：${subData.emoji} ${TYPE_NAMES[r.subType]}\n\n`;
+    md += `- 转化分：${r.subScore.toFixed(1)}\n`;
+    md += `- 标签：${subData.tagline}\n\n`;
+  }
+
+  md += `## 主要表现\n\n`;
+  mainData.features.forEach(f => { md += `- ${f}\n`; });
+  md += `\n## 调养建议\n\n`;
+  md += `**饮食**：${mainData.advice.diet}\n\n`;
+  md += `**运动**：${mainData.advice.exercise}\n\n`;
+  md += `**作息**：${mainData.advice.lifestyle}\n\n`;
+
+  md += `## 九维得分\n\n`;
+  md += `| 体质 | 转化分 | 判定 |\n`;
+  md += `|------|--------|------|\n`;
+  r.ranked.forEach(([id, score]) => {
+    const est = r.established[id] ? "✓ 成立" : "— 不成立";
+    md += `| ${TYPE_NAMES[id]} | ${score.toFixed(1)} | ${est} |\n`;
+  });
+
+  md += `\n---\n\n`;
+  md += `⚠️ 本报告由算法依据自评问卷生成，**仅供健康养生参考**，**不构成医疗诊断、治疗或预防建议**。如有健康问题，请咨询专业中医师。`;
+  return md;
+}
+
+async function shareReport() {
+  const md = generateReportMarkdown();
+  try {
+    await navigator.clipboard.writeText(md);
+    showToast("📋 报告已复制到剪贴板");
+  } catch (err) {
+    // Fallback
+    const textarea = document.createElement("textarea");
+    textarea.value = md;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      showToast("📋 报告已复制到剪贴板");
+    } catch (e) {
+      showToast("复制失败，请手动保存报告");
+    }
+    document.body.removeChild(textarea);
+  }
 }
 
 renderStart();

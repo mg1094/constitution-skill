@@ -9,3 +9,4 @@ output/*.md
 .DS_Store
 *.log
 .env
+node_modules/

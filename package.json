@@ -1,0 +1,28 @@
+{
+  "name": "constitution-skill",
+  "version": "1.0.0",
+  "description": "> AI 时代的中医体质测试 · 60 道题 · 9 大体质 · 雷达图报告",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "pytest tests/ -q && node tests/web-stage1.test.js",
+    "test-web": "node tests/web-stage1.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mg1094/constitution-skill.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mg1094/constitution-skill/issues"
+  },
+  "homepage": "https://github.com/mg1094/constitution-skill#readme",
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
